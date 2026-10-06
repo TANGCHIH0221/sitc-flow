@@ -81,3 +81,23 @@ ax.set_title("市值越小,投信的影響越大(2020–2025)")
 ax.legend(frameon=False, loc="upper right", ncol=2)
 fig.tight_layout(); fig.savefig(OUT / "fig3_by_size.png", dpi=160); plt.close(fig)
 print("figures done")
+
+# 圖 4:排除金融後,市值細分(與 07_size_bins.py 同定義)
+import runpy, io, contextlib
+with contextlib.redirect_stdout(io.StringIO()):
+    ns = runpy.run_path("07_size_bins.py")
+w4 = ns["u"]
+m4b = w4[w4.big_buy].groupby("mb", observed=True).oc_x.mean() * 1e4
+m4s = w4[w4.big_sell].groupby("mb", observed=True).oc_x.mean() * 1e4
+fig, ax = plt.subplots(figsize=(8, 4))
+x = np.arange(len(m4b))
+b1 = ax.bar(x - w / 2 - .01, m4b.values, w, color=BUY, label="投信大買日")
+b2 = ax.bar(x + w / 2 + .01, m4s.values, w, color=SELL, label="投信大賣日")
+label(ax, b1, m4b.values); label(ax, b2, m4s.values)
+ax.axhline(0, color=INK2, lw=.8)
+ax.set_xticks(x, [l.replace("≥", "≥") + " 億" for l in m4b.index], fontsize=8.5)
+ax.set_xlabel("市值"); ax.set_ylabel("開盤→收盤 超額報酬(bp)")
+ax.set_title("排除金融股:大買 500 億以上持平,大賣隨市值單調變弱(2020–2025)")
+ax.legend(frameon=False, loc="upper right", ncol=2)
+fig.tight_layout(); fig.savefig(OUT / "fig4_size_bins.png", dpi=160); plt.close(fig)
+print("fig4 done")
